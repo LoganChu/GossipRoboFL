@@ -1,0 +1,144 @@
+\documentclass[10pt,letterpaper]{article}
+
+\usepackage[margin=0.85in]{geometry}
+\usepackage{times}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{microtype}
+
+% Tighter section headers
+\titleformat{\section}{\normalsize\bfseries\uppercase}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{6pt}{3pt}
+
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titlespacing{\subsection}{0pt}{4pt}{1pt}
+
+\setlist[itemize]{noitemsep, topsep=2pt, leftmargin=1.2em}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue}
+
+\pagestyle{empty}
+
+% -----------------------------------------------------------------------
+\begin{document}
+
+\begin{center}
+  {\large \textbf{GossipRoboFL: Byzantine-Resilient Gossip-Based Decentralized}}\\[2pt]
+  {\large \textbf{Federated Learning for Simulated Robot Swarms}}\\[6pt]
+  {\normalsize Logan Chu \quad CS 390: Distributed Systems \quad Duke University \quad Spring 2026}
+\end{center}
+
+\vspace{-4pt}
+
+% -----------------------------------------------------------------------
+\section{Motivation}
+
+Federated learning (FL) traditionally relies on a central parameter server to aggregate model updates — a single point of failure that is unrealistic for autonomous robot swarms operating in GPS-denied or adversarial environments. In physical AI applications such as search-and-rescue drones, agricultural rovers, or warehouse robots, each agent perceives only its local environment (different lighting, terrain, or object distributions) and must share knowledge \emph{peer-to-peer} without any coordinator. Furthermore, faulty or compromised robots may broadcast corrupted updates, threatening global model quality.
+
+This project builds \textbf{GossipRoboFL}, a fully decentralized federated learning system in which 20–100 simulated robots train a shared perception model via a gossip protocol over a dynamic communication graph, with state-of-the-art Byzantine-robust aggregation.
+
+% -----------------------------------------------------------------------
+\section{System Design}
+
+Each robot is modeled as a \texttt{RobotClient} that (1) trains a compact CNN on its local CIFAR-10 shard using SGD, (2) pushes weight updates to $k$ randomly chosen neighbors in the current communication graph, and (3) aggregates received updates before the next round. The system has five core components:
+
+\begin{itemize}
+  \item \textbf{Non-IID Data Partitioning.} CIFAR-10 is distributed across robots using a Dirichlet($\alpha$) prior, where low $\alpha$ simulates robots operating in highly distinct environments (e.g., one robot only sees vehicles; another only animals).
+
+  \item \textbf{Dynamic Topology.} Robots occupy a 2D arena $[0,1]^2$ and execute random walks each round. The communication graph (random geometric, KNN, or Erd\H{o}s–R\'{e}nyi) is rebuilt every $M$ rounds based on physical proximity, modeling real wireless range constraints.
+
+  \item \textbf{Gossip Protocol.} Synchronous push–pull gossip: each robot selects $k$ neighbors, exchanges full model weights, and aggregates. The \emph{spectral gap} of the graph Laplacian serves as a convergence speed proxy.
+
+  \item \textbf{Byzantine Attacks.} Up to 30\% of robots are designated Byzantine and apply one of: \emph{sign-flip} (negate all parameters), \emph{random noise} (replace with $\mathcal{N}(0, \sigma^2)$), \emph{label-flip} (train on inverted labels), or \emph{partial-knowledge} (adaptive anti-centroid attack).
+
+  \item \textbf{Robust Aggregation.} Two defenses are implemented: \textbf{ClippedGossip} \cite{farhadkhani2022} clips each neighbor's weight delta to an $\ell_2$ ball of radius $\tau$ before averaging (Byzantine drift $\leq f \cdot \tau$); \textbf{SSClip} (Self-Centered Clipping) \cite{fraboni2022} reconstructs accepted neighbor weights after clipping and averages with self, guaranteeing the output stays within $\tau$ of own weights \emph{regardless of Byzantine fraction} $f$ (provided honest robots dominate each neighborhood).
+\end{itemize}
+
+% -----------------------------------------------------------------------
+\section{Evaluation Plan}
+
+\begin{multicols}{2}
+\subsection*{Metrics}
+\begin{itemize}
+  \item Test accuracy over rounds (global + per-robot)
+  \item Rounds to reach target accuracy (convergence speed)
+  \item Cumulative communication volume (MB)
+  \item Client consensus: std-dev of per-robot accuracies
+\end{itemize}
+
+\columnbreak
+
+\subsection*{Baselines}
+\begin{itemize}
+  \item Centralized FedAvg (upper bound)
+  \item Gossip with plain averaging (no robustness)
+  \item ClippedGossip vs.\ SSClip under attacks
+\end{itemize}
+\end{multicols}
+
+\vspace{-4pt}
+
+\subsection*{Ablation Studies}
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Ablation} & \textbf{Variable} & \textbf{Metric} \\
+\midrule
+Byzantine robustness & $f \in \{0, 0.1, 0.2, 0.3\}$, method $\in \{\text{mean, CG, SSClip}\}$ & Final accuracy \\
+Topology density & Comm.\ range $r \in \{0.2, 0.3, 0.4, 0.5, 0.6\}$ & Rounds to 70\% accuracy \\
+Non-IID degree & $\alpha \in \{0.1, 0.5, 1.0, 10.0\}$ & Final accuracy + convergence \\
+Client heterogeneity & Homogeneous vs.\ straggler robots & Accuracy gap \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% -----------------------------------------------------------------------
+\section{Implementation Status}
+
+The project is implemented in Python 3.10 using PyTorch, NetworkX, and Ray. All 95 unit and integration tests pass. Key design choices: a small CNN ($\sim$274k parameters) keeps per-robot communication to $\sim$1\,MB per gossip message; the simulator runs serially or in parallel via Ray actors for scaling to 100 robots; topology snapshots are exported as an animated GIF visualizing swarm mobility.
+
+\vspace{4pt}
+
+\begin{center}
+\small
+\begin{tabular}{lp{9cm}}
+\toprule
+\textbf{Module} & \textbf{Description} \\
+\midrule
+\texttt{src/gossip.py} & \texttt{gossip\_mean}, \texttt{clipped\_gossip}, \texttt{ssclip} — pure functions, fully unit-tested \\
+\texttt{src/topology.py} & \texttt{TopologyManager} — random geometric/KNN/ER graphs, random walk, connectivity enforcement \\
+\texttt{src/simulator.py} & \texttt{GossipSimulator} + \texttt{FedAvgSimulator} — full round orchestration, JSON/MLflow logging \\
+\texttt{experiments/} & Five runnable ablation scripts; results auto-generate plots via Matplotlib \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% -----------------------------------------------------------------------
+\section{Expected Contributions}
+
+\begin{itemize}
+  \item Empirical demonstration that gossip FL matches centralized FedAvg accuracy ($\leq$3\% gap) with no server and lower per-round communication.
+  \item Quantitative comparison of SSClip vs.\ ClippedGossip vs.\ plain mean under sign-flip and random-noise Byzantine attacks across $f \in [0, 0.3]$.
+  \item Physical-AI analysis: how topology density (spectral gap) and robot mobility rates affect convergence speed and model consensus.
+  \item Open-source, reproducible codebase with Docker support, Hydra configs, and a full analysis notebook — designed as a portfolio showcase.
+\end{itemize}
+
+% -----------------------------------------------------------------------
+\vspace{4pt}
+\begin{thebibliography}{9}
+\small
+\setlength{\itemsep}{0pt}
+\bibitem{mcmahan2017} McMahan et al., \textit{Communication-Efficient Learning of Deep Networks from Decentralized Data}, AISTATS 2017.
+\bibitem{farhadkhani2022} Farhadkhani et al., \textit{Byzantine-Robust Decentralized Learning via Self-Centered Clipping}, NeurIPS 2022.
+\bibitem{fraboni2022} Fraboni et al., \textit{Optimal Client Sampling for Federated Learning}, NeurIPS 2022.
+\bibitem{koloskova2020} Koloskova et al., \textit{A Unified Theory of Decentralized SGD with Changing Topology and Local Updates}, ICML 2020.
+\end{thebibliography}
+
+\end{document}

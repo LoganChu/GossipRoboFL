@@ -455,9 +455,15 @@ def build_gossip_simulator(
     # Reproducibility
     torch.manual_seed(config.experiment.seed)
     np.random.seed(config.experiment.seed)
-    device = torch.device(
-        config.experiment.device if torch.cuda.is_available() else "cpu"
-    )
+    if config.experiment.device != "cpu" and torch.cuda.is_available():
+        try:
+            device = torch.device(config.experiment.device)
+            torch.zeros(1, device=device)  # probe: catches driver/context failures
+        except Exception as e:
+            print(f"[build_gossip_simulator] CUDA unavailable ({e}), falling back to CPU.")
+            device = torch.device("cpu")
+    else:
+        device = torch.device("cpu")
 
     # Data
     train_ds, test_ds = load_raw_dataset(config.data.dataset, root=config.data.data_root)
@@ -565,9 +571,15 @@ def build_fedavg_simulator(config: Config) -> tuple[FedAvgSimulator, MetricsTrac
 
     torch.manual_seed(config.experiment.seed)
     np.random.seed(config.experiment.seed)
-    device = torch.device(
-        config.experiment.device if torch.cuda.is_available() else "cpu"
-    )
+    if config.experiment.device != "cpu" and torch.cuda.is_available():
+        try:
+            device = torch.device(config.experiment.device)
+            torch.zeros(1, device=device)  # probe: catches driver/context failures
+        except Exception as e:
+            print(f"[build_fedavg_simulator] CUDA unavailable ({e}), falling back to CPU.")
+            device = torch.device("cpu")
+    else:
+        device = torch.device("cpu")
 
     train_ds, test_ds = load_raw_dataset(config.data.dataset, root=config.data.data_root)
     index_lists = dirichlet_partition(

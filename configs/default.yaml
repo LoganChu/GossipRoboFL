@@ -6,7 +6,7 @@ experiment:
 
 data:
   dataset: "cifar10"       # "cifar10" | "fashion_mnist"
-  num_clients: 20
+  num_clients: 50
   alpha: 0.5               # Dirichlet concentration: lower = more non-IID
   batch_size: 64
   val_split: 0.1           # fraction of each client's data held for local validation
@@ -50,6 +50,6 @@ logging:
   backend: "json"          # "json" | "mlflow" | "both"
   log_dir: "results/"
   eval_every: 5            # evaluate global test accuracy every N rounds
-  save_model_every: 50     # save model checkpoint every N rounds (0 = disabled)
+  save_model_every: 100    # save model checkpoint every N rounds (0 = disabled)
   mlflow_uri: "http://localhost:5000"
   experiment_name: "gossiprobofl"
