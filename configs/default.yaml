@@ -1,0 +1,55 @@
+experiment:
+  name: "default"
+  seed: 42
+  rounds: 200
+  device: "cuda"  # "cpu" if no GPU available
+
+data:
+  dataset: "cifar10"       # "cifar10" | "fashion_mnist"
+  num_clients: 20
+  alpha: 0.5               # Dirichlet concentration: lower = more non-IID
+  batch_size: 64
+  val_split: 0.1           # fraction of each client's data held for local validation
+  data_root: "data/"
+
+client:
+  local_epochs: 3
+  learning_rate: 0.01
+  momentum: 0.9
+  weight_decay: 1.0e-4
+  heterogeneous: false     # if true, vary epochs/lr per client (stragglers)
+  min_epochs: 1
+  max_epochs: 5
+  delay_scale: 0.0         # mean of exponential delay (seconds); 0 = no delay
+
+gossip:
+  fanout: 4                # k neighbors to push to each round
+  aggregation: "ssclip"    # "mean" | "clipped_gossip" | "ssclip"
+  tau: null                # null = auto-select from pairwise distances
+  tau_percentile: 50.0     # which percentile of pairwise distances to use for auto-tau
+
+topology:
+  type: "random_geometric" # "random_geometric" | "knn" | "erdos_renyi"
+  comm_range: 0.4          # r for random geometric graph (unit square [0,1]^2)
+  k_nearest: 5             # k for KNN graph
+  er_prob: 0.2             # edge probability for Erdos-Renyi
+  update_every: 5          # rebuild graph every N rounds (0 = static graph)
+  mobility:
+    enabled: true
+    step_size: 0.05        # max step per axis per round (uniform [-step, step])
+    boundary: "reflect"    # "reflect" | "wrap"
+
+attack:
+  enabled: false
+  type: "sign_flip"        # "sign_flip" | "random_noise" | "label_flip" | "gaussian_perturb" | "partial_knowledge"
+  fraction: 0.2            # fraction of clients that are Byzantine
+  noise_scale: 10.0        # scale for random_noise attack
+  sign_scale: 1.0          # multiplier for sign_flip (default -1 * scale)
+
+logging:
+  backend: "json"          # "json" | "mlflow" | "both"
+  log_dir: "results/"
+  eval_every: 5            # evaluate global test accuracy every N rounds
+  save_model_every: 50     # save model checkpoint every N rounds (0 = disabled)
+  mlflow_uri: "http://localhost:5000"
+  experiment_name: "gossiprobofl"

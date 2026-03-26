@@ -1,0 +1,16 @@
+# @package _global_
+experiment:
+  name: "gossip_n50"
+  rounds: 200
+
+data:
+  num_clients: 50
+  alpha: 0.5
+
+gossip:
+  fanout: 6
+  aggregation: "ssclip"
+
+topology:
+  comm_range: 0.35
+  update_every: 5

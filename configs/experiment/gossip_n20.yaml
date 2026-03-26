@@ -1,0 +1,17 @@
+# @package _global_
+# 20-client gossip experiment — fast iteration config
+experiment:
+  name: "gossip_n20"
+  rounds: 200
+
+data:
+  num_clients: 20
+  alpha: 0.5
+
+gossip:
+  fanout: 4
+  aggregation: "ssclip"
+
+topology:
+  comm_range: 0.4
+  update_every: 5

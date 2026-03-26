@@ -1,0 +1,6 @@
+# @package _global_
+attack:
+  enabled: true
+  type: "random_noise"
+  fraction: 0.3
+  noise_scale: 10.0

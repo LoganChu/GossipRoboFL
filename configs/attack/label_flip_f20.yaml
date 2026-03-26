@@ -1,0 +1,5 @@
+# @package _global_
+attack:
+  enabled: true
+  type: "label_flip"
+  fraction: 0.2

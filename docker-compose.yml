@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  # -----------------------------------------------------------------------
+  # Main experiment runner
+  # -----------------------------------------------------------------------
+  gossiprobofl:
+    build: .
+    image: gossiprobofl:latest
+    container_name: gossiprobofl_run
+    volumes:
+      - ./results:/app/results      # persist experiment outputs
+      - ./data:/app/data            # persist downloaded datasets
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    command: ["--mode", "gossip", "experiment.rounds=200", "data.num_clients=20"]
+    depends_on:
+      - mlflow
+    # Uncomment for GPU support:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # -----------------------------------------------------------------------
+  # MLflow tracking server
+  # -----------------------------------------------------------------------
+  mlflow:
+    image: python:3.11-slim
+    container_name: gossiprobofl_mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./results/mlruns:/mlruns
+    command: >
+      bash -c "pip install mlflow --quiet &&
+               mlflow server
+               --host 0.0.0.0
+               --port 5000
+               --backend-store-uri /mlruns
+               --default-artifact-root /mlruns"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
