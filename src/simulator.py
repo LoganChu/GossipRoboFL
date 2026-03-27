@@ -134,6 +134,7 @@ class GossipSimulator:
                 snap_path = os.path.join(
                     self.config.logging.log_dir,
                     "topology_snaps",
+                    self.config.experiment.name,
                     f"round_{round_num:04d}.png",
                 )
                 os.makedirs(os.path.dirname(snap_path), exist_ok=True)
@@ -194,15 +195,19 @@ class GossipSimulator:
         }
 
     def _parallel_local_train(self) -> None:
-        """Run local_train() on all clients.
+        """Run local_train() on all clients in parallel via ThreadPoolExecutor.
 
-        Uses Ray actors if available, otherwise trains serially.
-        (Serial is surprisingly fast when GPU is shared because each client's
-        local epoch is short, and GPU overhead dominates for tiny mini-batches.)
+        When clients are spread across multiple GPUs (set up in build_gossip_simulator),
+        threads targeting different devices execute truly in parallel. Threads
+        targeting the same device are serialised by the CUDA driver but still
+        overlap Python overhead and data-loading with GPU compute.
+        PyTorch releases the GIL during CUDA ops, so threads do not block each other.
         """
-        # Serial training (default — works reliably on Windows with GPU)
-        for client in self.clients:
-            client.local_train()
+        from concurrent.futures import ThreadPoolExecutor
+        num_devices = len({str(c.device) for c in self.clients})
+        max_workers = max(num_devices, min(self._n, os.cpu_count() or 4))
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            list(pool.map(lambda c: c.local_train(), self.clients))
 
     def _collect_weights(self) -> dict[int, dict[str, torch.Tensor]]:
         """Call get_weights() on all clients; Byzantine ones apply attacks here."""
@@ -455,15 +460,26 @@ def build_gossip_simulator(
     # Reproducibility
     torch.manual_seed(config.experiment.seed)
     np.random.seed(config.experiment.seed)
+
+    # Build list of available devices; distribute clients round-robin across GPUs
     if config.experiment.device != "cpu" and torch.cuda.is_available():
-        try:
-            device = torch.device(config.experiment.device)
-            torch.zeros(1, device=device)  # probe: catches driver/context failures
-        except Exception as e:
-            print(f"[build_gossip_simulator] CUDA unavailable ({e}), falling back to CPU.")
-            device = torch.device("cpu")
+        num_gpus = torch.cuda.device_count()
+        client_devices = []
+        for i in range(num_gpus):
+            try:
+                d = torch.device(f"cuda:{i}")
+                torch.zeros(1, device=d)
+                client_devices.append(d)
+            except Exception as e:
+                print(f"[build_gossip_simulator] Skipping cuda:{i} ({e})")
+        if not client_devices:
+            print("[build_gossip_simulator] No CUDA devices usable, falling back to CPU.")
+            client_devices = [torch.device("cpu")]
     else:
-        device = torch.device("cpu")
+        client_devices = [torch.device("cpu")]
+
+    num_devices = len(client_devices)
+    print(f"[build_gossip_simulator] Using {num_devices} device(s): {[str(d) for d in client_devices]}")
 
     # Data
     train_ds, test_ds = load_raw_dataset(config.data.dataset, root=config.data.data_root)
@@ -492,10 +508,11 @@ def build_gossip_simulator(
     init_model = model_for_dataset(config.data.dataset)
     init_weights = copy.deepcopy(init_model.state_dict())
 
-    # Clients
+    # Clients — distributed round-robin across available devices
     clients = []
     for cid, (train_loader, val_loader) in enumerate(loaders):
-        model = model_for_dataset(config.data.dataset).to(device)
+        client_device = client_devices[cid % num_devices]
+        model = model_for_dataset(config.data.dataset).to(client_device)
         model.load_state_dict(copy.deepcopy(init_weights))
         client_attack = attack_cfg if cid in byz_ids else None
         # Force Byzantine flag even if attack_config is provided for non-byz client
@@ -508,7 +525,7 @@ def build_gossip_simulator(
             val_loader=val_loader,
             config=config.client,
             attack_config=client_attack,
-            device=device,
+            device=client_device,
             position=(float(np.random.rand()), float(np.random.rand())),
             seed=config.experiment.seed + cid,
         ))
@@ -551,7 +568,7 @@ def build_gossip_simulator(
         use_ray=use_ray,
     )
 
-    print(f"[build_gossip_simulator] device={device}, "
+    print(f"[build_gossip_simulator] devices={[str(d) for d in client_devices]}, "
           f"byz_ids={sorted(byz_ids)}, "
           f"model_size={model_size_bytes(clients[0].model) / 1024:.1f} KB")
 

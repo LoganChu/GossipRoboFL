@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(conda run:*)",
+      "Bash(conda list:*)",
+      "Bash(cd:*)",
+      "Bash(\"C:/Users/s-lch/anaconda3/envs/ml_env/python.exe\" _smoke_test.py)",
+      "Bash(\"C:/Users/s-lch/anaconda3/envs/ml_env/python.exe\" -m pytest tests/test_integration.py::TestConfigLoading tests/test_integration.py::TestFedAvgBaseline -v --tb=short)",
+      "Read(//c//**)",
+      "Read(//c/Users/s-lch/**)",
+      "Bash(python -c \"import torch; print\\(''CUDA available:'', torch.cuda.is_available\\(\\)\\); print\\(''Device:'', torch.cuda.get_device_name\\(0\\) if torch.cuda.is_available\\(\\) else ''none''\\); print\\(''PyTorch:'', torch.__version__\\)\")"
+    ]
+  }
+}

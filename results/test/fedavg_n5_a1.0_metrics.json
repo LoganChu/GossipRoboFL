@@ -1,0 +1,238 @@
+[
+  {
+    "round": 0,
+    "elapsed_sec": 44.92654323577881,
+    "cumulative_comm_bytes": 10945680,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true,
+    "global_accuracy": 0.1757,
+    "per_client_accuracy": [
+      0.1757,
+      0.1757,
+      0.1757,
+      0.1757,
+      0.1757
+    ],
+    "accuracy_std": 0.0,
+    "worst_client_accuracy": 0.1757,
+    "global_loss": 2.1988464099884033,
+    "honest_global_accuracy": 0.1757,
+    "honest_accuracy_std": 0.0,
+    "honest_worst_accuracy": 0.1757
+  },
+  {
+    "round": 1,
+    "elapsed_sec": 74.48324942588806,
+    "cumulative_comm_bytes": 21891360,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 2,
+    "elapsed_sec": 104.08598589897156,
+    "cumulative_comm_bytes": 32837040,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 3,
+    "elapsed_sec": 133.0778408050537,
+    "cumulative_comm_bytes": 43782720,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 4,
+    "elapsed_sec": 162.05973601341248,
+    "cumulative_comm_bytes": 54728400,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 5,
+    "elapsed_sec": 206.08943104743958,
+    "cumulative_comm_bytes": 65674080,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true,
+    "global_accuracy": 0.5072,
+    "per_client_accuracy": [
+      0.5072,
+      0.5072,
+      0.5072,
+      0.5072,
+      0.5072
+    ],
+    "accuracy_std": 0.0,
+    "worst_client_accuracy": 0.5072,
+    "global_loss": 1.5137627555847168,
+    "honest_global_accuracy": 0.5072,
+    "honest_accuracy_std": 0.0,
+    "honest_worst_accuracy": 0.5072
+  },
+  {
+    "round": 6,
+    "elapsed_sec": 237.01881289482117,
+    "cumulative_comm_bytes": 76619760,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 7,
+    "elapsed_sec": 265.38151454925537,
+    "cumulative_comm_bytes": 87565440,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 8,
+    "elapsed_sec": 293.02540159225464,
+    "cumulative_comm_bytes": 98511120,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 9,
+    "elapsed_sec": 322.7820522785187,
+    "cumulative_comm_bytes": 109456800,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 10,
+    "elapsed_sec": 357.34199714660645,
+    "cumulative_comm_bytes": 120402480,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true,
+    "global_accuracy": 0.5902,
+    "per_client_accuracy": [
+      0.5902,
+      0.5902,
+      0.5902,
+      0.5902,
+      0.5902
+    ],
+    "accuracy_std": 0.0,
+    "worst_client_accuracy": 0.5902,
+    "global_loss": 1.2923291793823242,
+    "honest_global_accuracy": 0.5902,
+    "honest_accuracy_std": 0.0,
+    "honest_worst_accuracy": 0.5902
+  },
+  {
+    "round": 11,
+    "elapsed_sec": 371.0419969558716,
+    "cumulative_comm_bytes": 131348160,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 12,
+    "elapsed_sec": 383.72308468818665,
+    "cumulative_comm_bytes": 142293840,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 13,
+    "elapsed_sec": 396.2387225627899,
+    "cumulative_comm_bytes": 153239520,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 14,
+    "elapsed_sec": 409.4183473587036,
+    "cumulative_comm_bytes": 164185200,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 15,
+    "elapsed_sec": 428.6883988380432,
+    "cumulative_comm_bytes": 175130880,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true,
+    "global_accuracy": 0.6325,
+    "per_client_accuracy": [
+      0.6325,
+      0.6325,
+      0.6325,
+      0.6325,
+      0.6325
+    ],
+    "accuracy_std": 0.0,
+    "worst_client_accuracy": 0.6325,
+    "global_loss": 1.13025963306427,
+    "honest_global_accuracy": 0.6325,
+    "honest_accuracy_std": 0.0,
+    "honest_worst_accuracy": 0.6325
+  },
+  {
+    "round": 16,
+    "elapsed_sec": 441.65436720848083,
+    "cumulative_comm_bytes": 186076560,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 17,
+    "elapsed_sec": 454.09379148483276,
+    "cumulative_comm_bytes": 197022240,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 18,
+    "elapsed_sec": 466.99306440353394,
+    "cumulative_comm_bytes": 207967920,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  },
+  {
+    "round": 19,
+    "elapsed_sec": 480.2741451263428,
+    "cumulative_comm_bytes": 218913600,
+    "graph_updated": false,
+    "graph_avg_degree": 4.0,
+    "graph_spectral_gap": 1.0,
+    "graph_is_connected": true
+  }
+]

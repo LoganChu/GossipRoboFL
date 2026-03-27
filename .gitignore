@@ -19,14 +19,14 @@ ENV/
 # Datasets (downloaded automatically)
 data/
 
-# Results and outputs
-results/
-*.png
-*.gif
-*.json
-!configs/*.json
+# Results and outputs — track metrics + plots, ignore large/noisy files
+# results/topology_snaps/ — now tracked
+results/**/*.gif             # topology animations (large)
+results/**/*.pth             # model checkpoints (large)
+results/**/*.pt
+results/**/*.ckpt
 
-# Model checkpoints
+# Model checkpoints anywhere else
 *.pth
 *.pt
 *.ckpt
