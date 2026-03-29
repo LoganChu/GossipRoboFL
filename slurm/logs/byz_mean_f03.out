@@ -1,0 +1,30 @@
+[main] Mode=gossip, N=50, dataset=cifar10, rounds=200, agg=mean, attack=sign_flip
+[build_gossip_simulator] Using 1 device(s): ['cuda:0']
+Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to data/cifar-10-python.tar.gz
+  0%|          | 0.00/170M [00:00<?, ?B/s]  0%|          | 131k/170M [00:00<02:16, 1.24MB/s]  0%|          | 459k/170M [00:00<01:18, 2.17MB/s]  2%|▏         | 3.47M/170M [00:00<00:11, 14.0MB/s]  4%|▍         | 6.62M/170M [00:00<00:08, 20.5MB/s]  6%|▌         | 9.80M/170M [00:00<00:06, 24.3MB/s]  7%|▋         | 12.6M/170M [00:00<00:06, 25.2MB/s]  9%|▉         | 15.5M/170M [00:00<00:05, 26.0MB/s] 11%|█         | 18.3M/170M [00:00<00:05, 26.5MB/s] 12%|█▏        | 20.9M/170M [00:00<00:05, 26.3MB/s] 14%|█▍        | 23.6M/170M [00:01<00:05, 26.2MB/s] 15%|█▌        | 26.2M/170M [00:01<00:05, 25.6MB/s] 17%|█▋        | 28.8M/170M [00:01<00:05, 25.6MB/s] 18%|█▊        | 31.4M/170M [00:01<00:05, 25.1MB/s] 20%|██        | 34.1M/170M [00:01<00:05, 25.5MB/s] 22%|██▏       | 36.7M/170M [00:01<00:05, 25.1MB/s] 23%|██▎       | 39.4M/170M [00:01<00:05, 25.7MB/s] 25%|██▍       | 42.0M/170M [00:01<00:05, 25.1MB/s] 26%|██▋       | 44.8M/170M [00:01<00:04, 25.9MB/s] 28%|██▊       | 47.4M/170M [00:01<00:04, 25.1MB/s] 30%|██▉       | 50.3M/170M [00:02<00:04, 26.0MB/s] 31%|███       | 52.9M/170M [00:02<00:04, 25.2MB/s] 33%|███▎      | 55.7M/170M [00:02<00:04, 25.9MB/s] 34%|███▍      | 58.4M/170M [00:02<00:04, 24.8MB/s] 36%|███▌      | 61.2M/170M [00:02<00:04, 25.8MB/s] 37%|███▋      | 63.8M/170M [00:02<00:04, 25.0MB/s] 39%|███▉      | 66.7M/170M [00:02<00:04, 25.8MB/s] 41%|████      | 69.3M/170M [00:02<00:04, 25.2MB/s] 42%|████▏     | 72.1M/170M [00:02<00:03, 25.9MB/s] 44%|████▍     | 74.7M/170M [00:03<00:03, 25.3MB/s] 45%|████▌     | 77.4M/170M [00:03<00:03, 25.8MB/s] 47%|████▋     | 80.0M/170M [00:03<00:03, 25.5MB/s] 48%|████▊     | 82.6M/170M [00:03<00:03, 25.7MB/s] 50%|████▉     | 85.2M/170M [00:03<00:03, 25.7MB/s] 52%|█████▏    | 87.8M/170M [00:03<00:03, 25.6MB/s] 53%|█████▎    | 90.4M/170M [00:03<00:03, 25.7MB/s] 55%|█████▍    | 93.0M/170M [00:03<00:03, 25.3MB/s] 56%|█████▌    | 95.8M/170M [00:03<00:02, 25.9MB/s] 58%|█████▊    | 98.4M/170M [00:03<00:02, 25.3MB/s] 59%|█████▉    | 101M/170M [00:04<00:02, 25.8MB/s]  61%|██████    | 104M/170M [00:04<00:02, 25.3MB/s] 63%|██████▎   | 107M/170M [00:04<00:02, 26.0MB/s] 64%|██████▍   | 109M/170M [00:04<00:02, 25.3MB/s] 66%|██████▌   | 112M/170M [00:04<00:02, 26.1MB/s] 67%|██████▋   | 115M/170M [00:04<00:02, 25.3MB/s] 69%|██████▉   | 117M/170M [00:04<00:02, 26.1MB/s] 70%|███████   | 120M/170M [00:04<00:01, 25.4MB/s] 72%|███████▏  | 123M/170M [00:04<00:01, 26.0MB/s] 74%|███████▎  | 126M/170M [00:05<00:01, 25.4MB/s] 75%|███████▌  | 128M/170M [00:05<00:01, 25.8MB/s] 77%|███████▋  | 131M/170M [00:05<00:01, 25.4MB/s] 78%|███████▊  | 133M/170M [00:05<00:01, 24.3MB/s] 80%|███████▉  | 136M/170M [00:05<00:01, 24.5MB/s] 81%|████████  | 138M/170M [00:05<00:01, 24.9MB/s] 83%|████████▎ | 141M/170M [00:05<00:01, 25.1MB/s] 84%|████████▍ | 144M/170M [00:05<00:01, 25.2MB/s] 86%|████████▌ | 146M/170M [00:05<00:00, 25.6MB/s] 87%|████████▋ | 149M/170M [00:05<00:00, 25.2MB/s] 89%|████████▉ | 152M/170M [00:06<00:00, 25.8MB/s] 90%|█████████ | 154M/170M [00:06<00:00, 25.2MB/s] 92%|█████████▏| 157M/170M [00:06<00:00, 25.9MB/s] 94%|█████████▎| 160M/170M [00:06<00:00, 25.2MB/s] 95%|█████████▌| 162M/170M [00:06<00:00, 26.0MB/s] 97%|█████████▋| 165M/170M [00:06<00:00, 25.1MB/s] 98%|█████████▊| 168M/170M [00:06<00:00, 26.1MB/s]100%|█████████▉| 170M/170M [00:06<00:00, 25.2MB/s]100%|██████████| 170M/170M [00:06<00:00, 25.0MB/s]
+Extracting data/cifar-10-python.tar.gz to data/
+Traceback (most recent call last):
+  File "/work/lc478/GossipRoboFL/main.py", line 114, in <module>
+    main()
+  File "/work/lc478/GossipRoboFL/main.py", line 91, in main
+    simulator, metrics = build_gossip_simulator(config, use_ray=args.ray)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/lc478/GossipRoboFL/src/simulator.py", line 485, in build_gossip_simulator
+    train_ds, test_ds = load_raw_dataset(config.data.dataset, root=config.data.data_root)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/lc478/GossipRoboFL/src/data.py", line 65, in load_raw_dataset
+    train_ds = torchvision.datasets.CIFAR10(root, train=True, download=download, transform=train_transform)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/home/lc478/miniconda3/envs/ml_env/lib/python3.11/site-packages/torchvision/datasets/cifar.py", line 69, in __init__
+    raise RuntimeError("Dataset not found or corrupted. You can use download=True to download it")
+RuntimeError: Dataset not found or corrupted. You can use download=True to download it
+/hpc/home/lc478/miniconda3/envs/ml_env/lib/python3.11/site-packages/torchvision/datasets/cifar.py:83: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(f, encoding="latin1")
+[main] Mode=gossip, N=50, dataset=cifar10, rounds=200, agg=mean, attack=sign_flip
+[build_gossip_simulator] Using 1 device(s): ['cuda:0']
+Files already downloaded and verified
+Files already downloaded and verified
+[build_gossip_simulator] devices=['cuda:0'], byz_ids=[3, 4, 8, 17, 24, 28, 29, 35, 37, 39, 41, 45, 46, 47, 49], model_size=1068.9 KB
+
+[GossipSimulator] Starting: N=50, byz=15, agg=mean, rounds=200
+Gossip rounds:   0%|          | 0/200 [00:00<?, ?rd/s]

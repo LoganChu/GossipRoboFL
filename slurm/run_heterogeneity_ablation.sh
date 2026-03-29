@@ -7,14 +7,13 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --mem=16G
-#SBATCH --time=04:00:00
-#SBATCH --partition=TODO_PARTITION_NAME
-#SBATCH --array=0-5
+#SBATCH --time=08:00:00
+#SBATCH --partition=wmglab-gpu
+#SBATCH --array=0-4
 
-# 6 tasks:
+# 5 tasks:
 #   0-3: alpha ablation (alpha in {0.1, 0.5, 1.0, 10.0}), homogeneous clients
-#   4:   heterogeneous clients, alpha=0.5
-#   5:   homogeneous clients, alpha=0.5 (paired control for task 4)
+#   4:   heterogeneous clients, alpha=0.5 (task 1 serves as its homogeneous control)
 
 mkdir -p slurm/logs
 
@@ -29,8 +28,8 @@ if [ $SLURM_ARRAY_TASK_ID -lt 4 ]; then
     NAME=noniid_a${ALPHA/./}_hom
 else
     ALPHA="0.5"
-    HET=$([ $SLURM_ARRAY_TASK_ID -eq 4 ] && echo "true" || echo "false")
-    NAME=noniid_a05_$([ $SLURM_ARRAY_TASK_ID -eq 4 ] && echo "het" || echo "hom")
+    HET="true"
+    NAME=noniid_a05_het
 fi
 
 echo "Task $SLURM_ARRAY_TASK_ID: alpha=$ALPHA heterogeneous=$HET"

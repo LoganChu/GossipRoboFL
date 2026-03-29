@@ -8,7 +8,21 @@
       "Bash(\"C:/Users/s-lch/anaconda3/envs/ml_env/python.exe\" -m pytest tests/test_integration.py::TestConfigLoading tests/test_integration.py::TestFedAvgBaseline -v --tb=short)",
       "Read(//c//**)",
       "Read(//c/Users/s-lch/**)",
-      "Bash(python -c \"import torch; print\\(''CUDA available:'', torch.cuda.is_available\\(\\)\\); print\\(''Device:'', torch.cuda.get_device_name\\(0\\) if torch.cuda.is_available\\(\\) else ''none''\\); print\\(''PyTorch:'', torch.__version__\\)\")"
+      "Bash(python -c \"import torch; print\\(''CUDA available:'', torch.cuda.is_available\\(\\)\\); print\\(''Device:'', torch.cuda.get_device_name\\(0\\) if torch.cuda.is_available\\(\\) else ''none''\\); print\\(''PyTorch:'', torch.__version__\\)\")",
+      "Bash(nvidia-smi --query-gpu=index,name,memory.free --format=csv,noheader)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//work/lc478/GossipRoboFL/**)",
+      "Bash(done)",
+      "Bash(/hpc/home/lc478/miniconda3/envs/ml_env/bin/python -c \"import torch; print\\(torch.__version__\\)\" 2>&1, what method are you using to parallelize like in terms of code.)",
+      "Bash(for env:*)",
+      "Bash($env -c \"import torch; print\\(''torch'', torch.__version__\\)\")",
+      "Bash(find /work/lc478/GossipRoboFL -name *.log -o -name *.out)",
+      "Bash(ls -lh /work/lc478/GossipRoboFL/slurm/logs/*.out)",
+      "Bash(grep -r \"memory\\\\|VRAM\\\\|GPU\\\\|cuda\" /work/lc478/GossipRoboFL/src/*.py)",
+      "Bash(nvidia-smi:*)",
+      "Bash(ls /work/lc478/GossipRoboFL/results/*metrics.json)",
+      "Bash(xargs -I{} basename {})"
     ]
   }
 }

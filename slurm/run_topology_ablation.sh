@@ -7,8 +7,8 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --mem=16G
-#SBATCH --time=04:00:00
-#SBATCH --partition=TODO_PARTITION_NAME
+#SBATCH --time=08:00:00
+#SBATCH --partition=wmglab-gpu
 #SBATCH --array=0-4
 
 # 5 tasks: comm_range in {0.2, 0.3, 0.4, 0.5, 0.6}

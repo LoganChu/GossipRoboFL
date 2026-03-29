@@ -7,8 +7,8 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --gres=gpu:8
 #SBATCH --mem=64G
-#SBATCH --time=04:00:00
-#SBATCH --partition=TODO_PARTITION_NAME
+#SBATCH --time=12:00:00
+#SBATCH --partition=wmglab-gpu
 
 mkdir -p slurm/logs
 
