@@ -22,7 +22,8 @@
       "Bash(grep -r \"memory\\\\|VRAM\\\\|GPU\\\\|cuda\" /work/lc478/GossipRoboFL/src/*.py)",
       "Bash(nvidia-smi:*)",
       "Bash(ls /work/lc478/GossipRoboFL/results/*metrics.json)",
-      "Bash(xargs -I{} basename {})"
+      "Bash(xargs -I{} basename {})",
+      "Bash(find /work/lc478/GossipRoboFL/results -name *.json -type f)"
     ]
   }
 }
