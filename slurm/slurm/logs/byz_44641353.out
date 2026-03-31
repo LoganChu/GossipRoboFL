@@ -1,0 +1,25 @@
+GPU 0 | Task 0: method=mean fraction=0.0
+GPU 1 | Task 3: method=mean fraction=0.3
+GPU 1 | Done: method=mean fraction=0.3
+GPU 0 | Done: method=mean fraction=0.0
+GPU 1 | Task 4: method=clipped_gossip fraction=0.0
+GPU 0 | Task 1: method=mean fraction=0.1
+GPU 1 | Done: method=clipped_gossip fraction=0.0
+GPU 1 | Task 5: method=clipped_gossip fraction=0.1
+GPU 0 | Done: method=mean fraction=0.1
+GPU 0 | Task 2: method=mean fraction=0.2
+GPU 1 | Done: method=clipped_gossip fraction=0.1
+GPU 0 | Done: method=mean fraction=0.2
+GPU 2 | Task 6: method=clipped_gossip fraction=0.2
+GPU 3 | Task 9: method=ssclip fraction=0.1
+GPU 2 | Done: method=clipped_gossip fraction=0.2
+GPU 2 | Task 7: method=clipped_gossip fraction=0.3
+GPU 3 | Done: method=ssclip fraction=0.1
+GPU 3 | Task 10: method=ssclip fraction=0.2
+GPU 2 | Done: method=clipped_gossip fraction=0.3
+GPU 2 | Task 8: method=ssclip fraction=0.0
+GPU 3 | Done: method=ssclip fraction=0.2
+GPU 3 | Task 11: method=ssclip fraction=0.3
+GPU 2 | Done: method=ssclip fraction=0.0
+GPU 3 | Done: method=ssclip fraction=0.3
+All 12 Byzantine ablation experiments complete.

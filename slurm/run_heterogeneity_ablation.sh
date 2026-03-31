@@ -10,16 +10,14 @@
 #SBATCH --time=08:00:00
 #SBATCH --partition=wmglab-gpu
 #SBATCH --array=0-4
+#SBATCH --chdir=/work/lc478/GossipRoboFL
 
 # 5 tasks:
 #   0-3: alpha ablation (alpha in {0.1, 0.5, 1.0, 10.0}), homogeneous clients
 #   4:   heterogeneous clients, alpha=0.5 (task 1 serves as its homogeneous control)
 
-mkdir -p slurm/logs
-
+eval "$(/hpc/home/lc478/miniconda3/bin/conda shell.bash hook)"
 conda activate ml_env
-cd $SLURM_SUBMIT_DIR
-
 ALPHAS=("0.1" "0.5" "1.0" "10.0")
 
 if [ $SLURM_ARRAY_TASK_ID -lt 4 ]; then
@@ -42,6 +40,7 @@ python main.py \
     client.heterogeneous=$HET \
     gossip.aggregation=ssclip \
     attack.enabled=false \
-    logging.save_model_every=0
+    logging.save_model_every=0 \
+    logging.topo_snap_every=0
 
 echo "Done: alpha=$ALPHA heterogeneous=$HET"

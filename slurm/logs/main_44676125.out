@@ -1,0 +1,11 @@
+Job ID: 44676125
+Node: dcc-wmglab-gpu-ferc-s-t18-21
+GPUs: 0,1,2,3
+[main] Mode=gossip, N=50, dataset=cifar10, rounds=200, agg=ssclip, attack=none
+[build_gossip_simulator] Using 4 device(s): ['cuda:0', 'cuda:1', 'cuda:2', 'cuda:3']
+Files already downloaded and verified
+Files already downloaded and verified
+[build_gossip_simulator] devices=['cuda:0', 'cuda:1', 'cuda:2', 'cuda:3'], byz_ids=[], model_size=1068.9 KB
+
+[GossipSimulator] Starting: N=50, byz=0, agg=ssclip, rounds=200
+Done: main run

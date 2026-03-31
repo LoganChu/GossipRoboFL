@@ -53,3 +53,4 @@ logging:
   save_model_every: 100    # save model checkpoint every N rounds (0 = disabled)
   mlflow_uri: "http://localhost:5000"
   experiment_name: "gossiprobofl"
+  topo_snap_every: 20    # topology snapshot every N rounds (0 = disabled)

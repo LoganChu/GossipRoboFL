@@ -9,6 +9,7 @@
 #SBATCH --mem=64G
 #SBATCH --time=12:00:00
 #SBATCH --partition=wmglab-gpu
+#SBATCH --chdir=/work/lc478/GossipRoboFL
 
 # 12 experiments: 3 methods x 4 fractions
 # Distributed across 4 GPUs (3 experiments per GPU, run sequentially per GPU)
@@ -21,11 +22,10 @@
 #   GPU 2: tasks  6-8  (clipped_gossip f=0.2,0.3, ssclip f=0.0)
 #   GPU 3: tasks  9-11 (ssclip f=0.1,0.2,0.3)
 
-cd "$(dirname "$(realpath "$0")")/.."
-mkdir -p slurm/logs
-
-source "$(conda info --base)/etc/profile.d/conda.sh"
+eval "$(/hpc/home/lc478/miniconda3/bin/conda shell.bash hook)"
 conda activate ml_env
+
+LOGDIR="slurm/logs"
 
 METHODS=("mean" "clipped_gossip" "ssclip")
 FRACTIONS=("0.0" "0.1" "0.2" "0.3")
@@ -48,7 +48,8 @@ run_experiment() {
         attack.type=sign_flip \
         attack.fraction=$fraction \
         logging.save_model_every=0 \
-        >> slurm/logs/byz_${method}_f${fraction/./}.out 2>&1
+        logging.topo_snap_every=0 \
+        >> "$LOGDIR/byz_${method}_f${fraction/./}.out" 2>&1
     echo "GPU $gpu_id | Done: method=$method fraction=$fraction"
 }
 

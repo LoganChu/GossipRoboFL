@@ -10,14 +10,12 @@
 #SBATCH --time=08:00:00
 #SBATCH --partition=wmglab-gpu
 #SBATCH --array=0-4
+#SBATCH --chdir=/work/lc478/GossipRoboFL
 
 # 5 tasks: comm_range in {0.2, 0.3, 0.4, 0.5, 0.6}
 
-mkdir -p slurm/logs
-
+eval "$(/hpc/home/lc478/miniconda3/bin/conda shell.bash hook)"
 conda activate ml_env
-cd $SLURM_SUBMIT_DIR
-
 RANGES=("0.2" "0.3" "0.4" "0.5" "0.6")
 RANGE=${RANGES[$SLURM_ARRAY_TASK_ID]}
 
@@ -30,6 +28,7 @@ python main.py \
     gossip.aggregation=ssclip \
     topology.comm_range=$RANGE \
     attack.enabled=false \
-    logging.save_model_every=0
+    logging.save_model_every=0 \
+    logging.topo_snap_every=0
 
 echo "Done: comm_range=$RANGE"

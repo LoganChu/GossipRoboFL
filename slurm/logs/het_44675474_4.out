@@ -1,0 +1,12 @@
+Task 4: alpha=0.5 heterogeneous=true
+[main] Mode=gossip, N=50, dataset=cifar10, rounds=200, agg=ssclip, attack=none
+[build_gossip_simulator] Using 1 device(s): ['cuda:0']
+Files already downloaded and verified
+Files already downloaded and verified
+[build_gossip_simulator] devices=['cuda:0'], byz_ids=[], model_size=1068.9 KB
+
+[GossipSimulator] Starting: N=50, byz=0, agg=ssclip, rounds=200
+[GossipSimulator] Done in 16969.1s
+
+[main] Plots saved: ['results/noniid_a05_het_aggssclip_n50_byz20_a0.5_convergence.png', 'results/noniid_a05_het_aggssclip_n50_byz20_a0.5_comm_overhead.png']
+Done: alpha=0.5 heterogeneous=true

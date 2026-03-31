@@ -120,7 +120,7 @@ class GossipSimulator:
         """
         rounds = num_rounds or self.config.experiment.rounds
         eval_every = self.config.logging.eval_every
-        save_topo_every = self.config.topology.update_every or 10
+        save_topo_every = self.config.logging.topo_snap_every
 
         print(f"\n[GossipSimulator] Starting: N={self._n}, byz={len(self._byzantine_ids)}, "
               f"agg={self.config.gossip.aggregation}, rounds={rounds}")
@@ -130,7 +130,7 @@ class GossipSimulator:
             round_metrics = self._run_round(round_num)
 
             # Save topology snapshot for GIF
-            if round_num % save_topo_every == 0:
+            if save_topo_every > 0 and round_num % save_topo_every == 0:
                 snap_path = os.path.join(
                     self.config.logging.log_dir,
                     "topology_snaps",

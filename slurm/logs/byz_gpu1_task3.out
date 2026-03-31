@@ -1,9 +1,0 @@
-[main] Mode=gossip, N=50, dataset=cifar10, rounds=200, agg=mean, attack=sign_flip
-Traceback (most recent call last):
-  File "/work/lc478/GossipRoboFL/main.py", line 114, in <module>
-    main()
-  File "/work/lc478/GossipRoboFL/main.py", line 90, in main
-    from src.simulator import build_gossip_simulator
-  File "/work/lc478/GossipRoboFL/src/simulator.py", line 35, in <module>
-    import torch
-ModuleNotFoundError: No module named 'torch'

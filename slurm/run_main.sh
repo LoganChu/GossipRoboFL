@@ -5,20 +5,18 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --gres=gpu:8
+#SBATCH --gres=gpu:4
 #SBATCH --mem=64G
 #SBATCH --time=12:00:00
 #SBATCH --partition=wmglab-gpu
-
-mkdir -p slurm/logs
+#SBATCH --chdir=/work/lc478/GossipRoboFL
 
 # Load environment — adjust module names for your cluster
 # module load cuda/12.8
 # module load anaconda3
 
+eval "$(/hpc/home/lc478/miniconda3/bin/conda shell.bash hook)"
 conda activate ml_env
-
-cd $SLURM_SUBMIT_DIR
 
 echo "Job ID: $SLURM_JOB_ID"
 echo "Node: $SLURMD_NODENAME"

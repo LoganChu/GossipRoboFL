@@ -90,6 +90,7 @@ class LoggingConfig:
     save_model_every: int = 50     # checkpoint every N rounds (0 = disabled)
     mlflow_uri: str = "http://localhost:5000"
     experiment_name: str = "gossiprobofl"
+    topo_snap_every: int = 20       # snapshot topology every N rounds; 0 = disabled
 
 
 @dataclass

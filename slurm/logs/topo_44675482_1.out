@@ -1,0 +1,12 @@
+Task 1: comm_range=0.3
+[main] Mode=gossip, N=50, dataset=cifar10, rounds=200, agg=ssclip, attack=none
+[build_gossip_simulator] Using 1 device(s): ['cuda:0']
+Files already downloaded and verified
+Files already downloaded and verified
+[build_gossip_simulator] devices=['cuda:0'], byz_ids=[], model_size=1068.9 KB
+
+[GossipSimulator] Starting: N=50, byz=0, agg=ssclip, rounds=200
+[GossipSimulator] Done in 16005.5s
+
+[main] Plots saved: ['results/topo_abl_r03_aggssclip_n50_byz20_a0.5_convergence.png', 'results/topo_abl_r03_aggssclip_n50_byz20_a0.5_comm_overhead.png']
+Done: comm_range=0.3

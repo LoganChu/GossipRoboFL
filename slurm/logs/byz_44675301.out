@@ -1,0 +1,10 @@
+GPU 0 | Task 0: method=mean fraction=0.0
+GPU 1 | Task 3: method=mean fraction=0.3
+GPU 1 | Done: method=mean fraction=0.3
+GPU 1 | Task 4: method=clipped_gossip fraction=0.0
+GPU 0 | Done: method=mean fraction=0.0
+GPU 0 | Task 1: method=mean fraction=0.1
+GPU 1 | Done: method=clipped_gossip fraction=0.0
+GPU 1 | Task 5: method=clipped_gossip fraction=0.1
+GPU 0 | Done: method=mean fraction=0.1
+GPU 0 | Task 2: method=mean fraction=0.2
