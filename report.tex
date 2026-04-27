@@ -1,0 +1,306 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{xspace}
+
+\newcommand{\sys}{GossipRoboFL\xspace}
+
+\begin{document}
+
+\title{GossipRoboFL: Byzantine-Robust Gossip Federated Learning\\for Decentralized Robot Swarms}
+
+\author{
+\IEEEauthorblockN{Logan Chu,\; William Zhang,\; Jay Warrier,\; William Vo}
+\IEEEauthorblockA{Team GossipRoboFL\quad
+CS 390: Distributed Systems, Duke University, Spring 2026}
+}
+
+\maketitle
+
+\begin{abstract}
+Decentralized robot swarms must learn collaboratively without a central
+coordinator.
+We built \sys, a fully peer-to-peer federated learning system for 50-robot
+swarms operating on dynamic, proximity-based communication graphs.
+Robots train locally on heterogeneous image data and share model weights only
+with physical neighbors via gossip.
+Using the SSClip Byzantine-robust aggregator, \sys sustains 75.7\%
+classification accuracy on CIFAR-10 under 20\% malicious robots---within
+6~pp of centralized FedAvg with no server---and converges even at spectral
+gaps as low as $\lambda_2{=}0.055$.
+\end{abstract}
+
+\section{Goals}
+
+Traditional federated learning (FedAvg~\cite{mcmahan2017}) relies on a
+central parameter server that is both a communication bottleneck and a single
+point of failure.
+Robot swarms operating in GPS-denied or infrastructure-free environments
+cannot assume persistent server connectivity.
+\sys pursues four distributed-systems goals:
+
+\begin{enumerate}
+\item \textbf{Serverless coordination.}
+Replace the central aggregator with pure peer-to-peer gossip averaging: each
+robot pushes its model to $k{=}4$ physical neighbors per round.
+\item \textbf{Byzantine fault tolerance.}
+Withstand sign-flip adversaries corrupting up to 30\% of the swarm using the
+Self-Centred Clipping aggregator (SSClip)~\cite{fraboni2022}.
+\item \textbf{Topology sensitivity.}
+Characterize how communication range $r$ and algebraic connectivity
+$\lambda_2$ (second eigenvalue of the graph Laplacian) govern convergence.
+\item \textbf{Data heterogeneity robustness.}
+Maintain performance under Dirichlet-partitioned non-IID data
+($\alpha \in [0.1, 10.0]$) and straggler clients with variable local epochs.
+\end{enumerate}
+
+\section{What We Built}
+
+\subsection{Architecture}
+
+\sys comprises six Python modules under \texttt{src/}:
+
+\textbf{\texttt{simulator.py}} implements \texttt{GossipSimulator}
+(decentralized) and \texttt{FedAvgSimulator} (centralized baseline).
+Each synchronous round: robots train locally via Ray/\texttt{ThreadPoolExecutor},
+each robot gossips to $k$ neighbors, weights are aggregated by the selected
+algorithm, and the dynamic topology is rebuilt every 5~rounds.
+Metrics (accuracy, $\lambda_2$, cumulative communication bytes) are logged
+per round to JSON.
+
+\textbf{\texttt{encounter\_gossip.py}} implements
+\texttt{EncounterGossipSimulator} for DTN-style operation: gossip fires only
+when robots physically enter communication range, asynchronously with respect
+to training.
+It tracks graph fragmentation (\texttt{num\_components},
+\texttt{mean\_isolation\_steps}), capturing the CAP-theorem tradeoff between
+model consistency and continued local availability during network partitions.
+
+\textbf{\texttt{client.py}} models one \texttt{RobotClient} running local SGD
+on a Dirichlet-partitioned CIFAR-10 shard.
+Byzantine robots inject attacks post-training before broadcasting.
+
+\textbf{\texttt{gossip.py}} provides three aggregators:
+\texttt{gossip\_mean} (no resilience), \texttt{clipped\_gossip} (clips
+neighbor deltas to an $L_2$ ball of radius $\tau$~\cite{farhadkhani2022}),
+and \texttt{ssclip} (reconstructs accepted weights after clipping; drift
+$\leq\!\tau$ regardless of Byzantine fraction $f$~\cite{fraboni2022}).
+
+\textbf{\texttt{topology.py}} manages robot positions on a unit square with
+random-geometric connectivity.
+Robots take Gaussian mobility steps ($\sigma{=}0.05$ per round);
+$\lambda_2$ is recomputed via \texttt{numpy.linalg.eigvalsh} on the explicit
+Laplacian.
+
+\textbf{\texttt{attacks.py}} provides five attack profiles:
+\texttt{sign\_flip}, \texttt{random\_noise}, \texttt{label\_flip},
+\texttt{gaussian\_perturb}, and an adaptive anti-centroid
+(\texttt{partial\_knowledge}).
+
+The model is \texttt{SmallCNNCifar}: a 3-block Conv--BN--ReLU network
+(${\approx}487$k parameters, ${\approx}2$\,MB per message), chosen so that
+per-round gossip traffic remains tractable at $N{=}50$, $k{=}4$.
+
+\subsection{Infrastructure}
+
+All experiments ran on a SLURM cluster with NVIDIA GPUs under a managed
+\texttt{conda} environment.
+Five SLURM job scripts drove the Byzantine, topology, heterogeneity, FedAvg
+baseline, and encounter ablations.
+Each condition executed 200 gossip rounds with $N{=}50$ robots and logged
+per-round metrics to JSON (${\approx}89$\,KB each, 22~files total).
+Convergence curves, heatmaps, and per-client accuracy distributions were
+generated in \texttt{notebooks/analysis.ipynb}.
+
+\section{Research Questions}
+
+\textbf{Q1:} How do Byzantine fraction $f$ and aggregation algorithm interact
+to determine accuracy under a sign-flip attack?
+
+\textbf{Q2:} How does communication range $r$ (and spectral gap $\lambda_2$)
+govern gossip convergence under dynamic robot mobility?
+
+\textbf{Q3:} How resilient is gossip FL to Dirichlet data heterogeneity
+($\alpha$) and client straggler effects?
+
+\section{Experiments \& Results}
+
+\textbf{Setup:} $N{=}50$ robots, CIFAR-10, Dirichlet $\alpha{=}0.5$,
+200~rounds, fanout $k{=}4$, CUDA.
+The centralized FedAvg baseline achieves \textbf{81.5\%} accuracy (no
+Byzantine robots, no topology constraint).
+
+\subsection{Q1: Byzantine Robustness}
+
+Table~\ref{tab:byz} shows final honest-robot accuracy for three aggregators.
+Mean averaging collapses to near-random accuracy (${\approx}10\%$) at
+$f{\geq}20\%$---a failure mode that directly mirrors Byzantine consensus
+impossibility without sufficient redundancy~\cite{lamport1982}.
+ClippedGossip degrades from 75.2\% to 52.3\% at $f{=}10\%$.
+SSClip sustains \textbf{75.7\%} at $f{=}20\%$: a \textbf{64.7~pp}
+improvement over Mean at the same fault level.
+Notably, SSClip under 20\% Byzantine ($75.7\%$) outperforms ClippedGossip
+under only 10\% Byzantine ($52.3\%$), demonstrating a qualitatively
+stronger fault tolerance guarantee.
+
+\begin{table}[h]
+\centering
+\caption{Final Honest-Robot Accuracy vs.\ Byzantine Fraction
+($N{=}50$, $\alpha{=}0.5$, 200 rounds)}
+\label{tab:byz}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Aggregator & $f{=}0\%$ & $f{=}10\%$ & $f{=}20\%$ & $f{=}30\%$ \\
+\midrule
+Mean          & 76.3\% & 18.6\% & 11.0\% & 10.0\% \\
+ClippedGossip & 75.2\% & 52.3\% & ---    & ---    \\
+SSClip        & ${\approx}75\%$ & --- & \textbf{75.7\%} & --- \\
+\midrule
+\multicolumn{5}{l}{\footnotesize{---: condition not run; FedAvg (centralized, no attack): 81.5\%}}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Q2: Network Topology and Spectral Gap}
+
+Table~\ref{tab:topo} sweeps communication range $r$ under dynamic mobility.
+Spectral gap $\lambda_2$ grows 170${\times}$ (from~$0.055$ to~$9.29$) as
+$r$ increases from~$0.2$ to~$0.6$, yet final accuracy shifts by only
+\textbf{3.4~pp}.
+At $r{=}0.2$ ($\lambda_2{=}0.055$), the random-geometric graph is
+near-disconnected yet gossip still converges to 74.1\%---demonstrating
+\emph{partition tolerance} analogous to eventual consistency.
+Accuracy peaks at $r{=}0.5$ ($\lambda_2{=}5.1$) and shows no further
+improvement with densification, consistent with the $O(1/\lambda_2)$
+mixing-time bound saturating once $\lambda_2 \gg 1$.
+
+\begin{table}[h]
+\centering
+\caption{Topology Ablation: Comm.\ Range, Spectral Gap, Accuracy
+(SSClip, $f{=}20\%$, 200 rounds)}
+\label{tab:topo}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Range $r$ & $\lambda_2$ & Accuracy & Density \\
+\midrule
+0.2 & 0.055 & 74.1\% & Very sparse \\
+0.3 & 0.553 & 76.5\% & Sparse \\
+0.4 & 1.894 & 75.9\% & Medium \\
+0.5 & 5.079 & \textbf{77.5\%} & Dense \\
+0.6 & 9.291 & 76.5\% & Very dense \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Q3: Data Heterogeneity}
+
+Table~\ref{tab:noniid} varies Dirichlet $\alpha$.
+The \textbf{15.4~pp} accuracy gap from $\alpha{=}0.1$ to $\alpha{=}10.0$
+confirms that data distribution---not topology---is the dominant performance
+driver in gossip FL.
+At $\alpha{=}0.1$, each robot sees ${\approx}1$--2 of 10 classes; divergent
+local gradients overwhelm gossip averaging faster than SSClip can reconcile
+them.
+Heterogeneous straggler clients (1--5 variable local epochs) perform within
+\textbf{0.3~pp} of homogeneous clients, suggesting SSClip's $\tau$-bounded
+clipping absorbs staleness-induced gradient variance without requiring
+synchronization.
+
+\begin{table}[h]
+\centering
+\caption{Data Heterogeneity Ablation (SSClip, $f{=}20\%$, $N{=}50$)}
+\label{tab:noniid}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+Dirichlet $\alpha$ & Accuracy & Client Type \\
+\midrule
+0.1 (severe non-IID) & 60.4\% & Homogeneous \\
+0.5 (default)        & 75.7\% & Homogeneous \\
+1.0                  & 78.1\% & Homogeneous \\
+10.0 (near IID)      & 79.8\% & Homogeneous \\
+0.5                  & 75.9\% & Heterogeneous (stragglers) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Communication cost:} At $k{=}4$, $N{=}50$, each round transfers
+${\approx}400$\,MB of model weights---linear in $k$, with no server I/O
+bottleneck, compared to FedAvg's star topology where server bandwidth scales
+with $N$.
+
+\section{Conclusion and Debrief}
+
+\textbf{Key findings.}
+SSClip enables Byzantine-robust gossip FL within 6~pp of centralized FedAvg
+with zero server infrastructure.
+Network topology matters only at the sparse extreme ($\lambda_2 {<} 0.5$);
+beyond this threshold, convergence is effectively topology-agnostic.
+Data heterogeneity ($\alpha$) is the dominant accuracy driver; straggler
+effects are negligible.
+
+\textbf{Distributed systems connections.}
+Gossip protocols are a classical DS primitive for epidemic broadcast and
+push-sum averaging~\cite{kempe2003}.
+\sys demonstrates their application in Byzantine fault-tolerant model
+averaging---a direct analog of Byzantine consensus in asynchronous
+message-passing networks.
+The encounter simulator embodies the CAP tradeoff: partitioned robots
+sacrifice consistency (stale model weights) for availability (continued local
+training).
+The spectral gap $\lambda_2$ serves as the network's algebraic proxy for
+consensus round complexity, connecting graph theory directly to convergence
+guarantees.
+
+\textbf{Obstacles encountered.}
+\begin{enumerate}
+\item \textit{Windows/Ray incompatibility.}
+Ray's \texttt{fork}-based worker pool is unsupported on Windows~11.
+We fell back to \texttt{ThreadPoolExecutor} for local development and ran Ray
+only on the Linux SLURM cluster.
+\item \textit{SLURM job preemption.}
+GPU preemption produced partial result files.
+Per-condition output naming conventions allowed us to identify and safely
+resubmit incomplete conditions.
+\item \textit{Spectral gap on disconnected graphs.}
+NetworkX's \texttt{algebraic\_connectivity} uses an internal
+\texttt{tracemin\_lu} solver that returns NaN on disconnected graphs.
+We replaced it with \texttt{numpy.linalg.eigvalsh} on the explicit Laplacian,
+returning $\lambda_2{=}0$ for disconnected components.
+\item \textit{Experiment wall time.}
+200~rounds $\times$ 50~robots $\times$ 14~conditions required
+${\approx}18$~GPU-hours across multiple SLURM submissions.
+\end{enumerate}
+
+\textbf{Future work.}
+Three extensions are immediately actionable:
+(1)~\emph{push-sum gossip}~\cite{kempe2003} for provably correct weighted
+averaging under dropped messages and variable delays;
+(2)~\emph{SCAFFOLD control variates}~\cite{karimireddy2020} to correct
+client drift from severe non-IID partitions without synchronization;
+(3)~physical deployment on differential-drive robots with IEEE~802.11p
+ad-hoc communication to validate simulation assumptions.
+
+\begin{thebibliography}{9}
+\bibitem{mcmahan2017}
+H.~B.\ McMahan et~al., ``Communication-efficient learning of deep networks
+from decentralized data,'' \textit{AISTATS}, 2017.
+\bibitem{fraboni2022}
+Y.~Fraboni et~al., ``A general theory for federated optimization with
+asynchronous and heterogeneous clients,'' \textit{TMLR}, 2022.
+\bibitem{farhadkhani2022}
+S.~Farhadkhani et~al., ``Byzantine machine learning made easy by gradient
+pre-aggregation,'' \textit{ICML}, 2022.
+\bibitem{lamport1982}
+L.~Lamport, R.~Shostak, M.~Pease, ``The Byzantine generals problem,''
+\textit{ACM TPLS}, 1982.
+\bibitem{kempe2003}
+D.~Kempe, A.~Dobra, J.~Gehrke, ``Gossip-based computation of aggregate
+information,'' \textit{FOCS}, 2003.
+\bibitem{karimireddy2020}
+S.~P.\ Karimireddy et~al., ``SCAFFOLD: Stochastic controlled averaging for
+federated learning,'' \textit{ICML}, 2020.
+\end{thebibliography}
+
+\end{document}

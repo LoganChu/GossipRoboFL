@@ -54,6 +54,10 @@ class GossipConfig:
     aggregation: str = "ssclip"   # "mean" | "clipped_gossip" | "ssclip"
     tau: Optional[float] = None   # None = auto-select from pairwise distances
     tau_percentile: float = 50.0  # percentile of pairwise dists used for auto-tau
+    # Encounter-mode parameters (EncounterGossipSimulator only)
+    steps_per_round: int = 1      # micro-steps per logical round
+    train_every_steps: int = 1    # base training interval (steps)
+    async_train: bool = False     # Poisson-sampled training intervals per robot
 
 
 @dataclass
@@ -70,6 +74,7 @@ class TopologyConfig:
     k_nearest: int = 5              # k for KNN graph
     er_prob: float = 0.2            # edge probability for Erdos-Renyi
     update_every: int = 5           # rebuild graph every N rounds (0 = static)
+    drop_prob: float = 0.0          # message drop probability for encounter mode
     mobility: MobilityConfig = field(default_factory=MobilityConfig)
 
 

@@ -35,8 +35,12 @@ results/**/*.ckpt
 .ipynb_checkpoints/
 *.ipynb~
 
+# Claude Code
+.claude/
+
 # MLflow
 mlruns/
+.*
 
 # IDE
 .vscode/

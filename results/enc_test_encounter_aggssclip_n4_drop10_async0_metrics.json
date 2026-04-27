@@ -1,0 +1,54 @@
+[
+  {
+    "round": 0,
+    "elapsed_sec": 69.4447455406189,
+    "cumulative_comm_bytes": 5472840,
+    "graph_updated": true,
+    "graph_avg_degree": 1.5,
+    "graph_spectral_gap": 0.0,
+    "graph_is_connected": false,
+    "graph_num_components": 2,
+    "graph_largest_component_frac": 0.75,
+    "mean_isolation_steps": 0.25,
+    "max_isolation_steps": 1.0,
+    "global_accuracy": 0.22397499999999998,
+    "honest_global_accuracy": 0.22397499999999998,
+    "per_client_accuracy": [
+      0.2107,
+      0.1949,
+      0.2702,
+      0.2201
+    ],
+    "accuracy_std": 0.028166236436556448,
+    "worst_client_accuracy": 0.1949,
+    "global_loss": 2.512461274814606,
+    "honest_accuracy_std": 0.028166236436556448,
+    "honest_worst_accuracy": 0.1949
+  },
+  {
+    "round": 1,
+    "elapsed_sec": 136.50874376296997,
+    "cumulative_comm_bytes": 9851112,
+    "graph_updated": true,
+    "graph_avg_degree": 1.0,
+    "graph_spectral_gap": 0.0,
+    "graph_is_connected": false,
+    "graph_num_components": 2,
+    "graph_largest_component_frac": 0.75,
+    "mean_isolation_steps": 0.5,
+    "max_isolation_steps": 2.0,
+    "global_accuracy": 0.39965000000000006,
+    "honest_global_accuracy": 0.39965000000000006,
+    "per_client_accuracy": [
+      0.38,
+      0.464,
+      0.3381,
+      0.4165
+    ],
+    "accuracy_std": 0.046366394080195626,
+    "worst_client_accuracy": 0.3381,
+    "global_loss": 2.1504744043827055,
+    "honest_accuracy_std": 0.046366394080195626,
+    "honest_worst_accuracy": 0.3381
+  }
+]
