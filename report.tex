@@ -55,63 +55,62 @@ Maintain performance under Dirichlet-partitioned non-IID data
 ($\alpha \in [0.1, 10.0]$) and straggler clients with variable local epochs.
 \end{enumerate}
 
-\section{What We Built}
+\section{System Design}
 
-\subsection{Architecture}
+\subsection{Gossip Federated Learning Protocol}
 
-\sys comprises six Python modules under \texttt{src/}:
+\sys implements synchronous gossip FL over a time-varying communication
+graph.
+Each round proceeds in three phases: (1)~every robot independently performs
+local SGD on its private data shard; (2)~each robot transmits its current
+model weights to $k{=}4$ randomly sampled neighbors within communication
+range; and (3)~each robot aggregates the received models using the selected
+aggregation rule.
+The communication graph is reconstructed every 5~rounds as robots execute a
+Gaussian random walk ($\sigma{=}0.05$ per step on a unit-square arena),
+capturing the dynamic encounter topology of a physical swarm.
 
-\textbf{\texttt{simulator.py}} implements \texttt{GossipSimulator}
-(decentralized) and \texttt{FedAvgSimulator} (centralized baseline).
-Each synchronous round: robots train locally via Ray/\texttt{ThreadPoolExecutor},
-each robot gossips to $k$ neighbors, weights are aggregated by the selected
-algorithm, and the dynamic topology is rebuilt every 5~rounds.
-Metrics (accuracy, $\lambda_2$, cumulative communication bytes) are logged
-per round to JSON.
+\subsection{Aggregation Rules and Byzantine Resilience}
 
-\textbf{\texttt{encounter\_gossip.py}} implements
-\texttt{EncounterGossipSimulator} for DTN-style operation: gossip fires only
-when robots physically enter communication range, asynchronously with respect
-to training.
-It tracks graph fragmentation (\texttt{num\_components},
-\texttt{mean\_isolation\_steps}), capturing the CAP-theorem tradeoff between
-model consistency and continued local availability during network partitions.
+Three aggregation strategies are evaluated, offering increasing fault
+tolerance.
+\emph{Mean averaging} computes a simple weighted average of all received
+models, providing no protection against adversarial updates.
+\emph{ClippedGossip}~\cite{farhadkhani2022} clips each neighbor's model
+delta to an $L_2$ ball of radius $\tau$ before averaging, bounding the
+influence of any individual peer; the resulting drift is at most $f \cdot
+\tau$ for Byzantine fraction $f$.
+\emph{Self-Centred Clipping (SSClip)}~\cite{fraboni2022} reconstructs the
+accepted weights after clipping, achieving a stronger guarantee: model drift
+is bounded by $\tau$ regardless of $f$.
 
-\textbf{\texttt{client.py}} models one \texttt{RobotClient} running local SGD
-on a Dirichlet-partitioned CIFAR-10 shard.
-Byzantine robots inject attacks post-training before broadcasting.
+\subsection{Fault and Topology Models}
 
-\textbf{\texttt{gossip.py}} provides three aggregators:
-\texttt{gossip\_mean} (no resilience), \texttt{clipped\_gossip} (clips
-neighbor deltas to an $L_2$ ball of radius $\tau$~\cite{farhadkhani2022}),
-and \texttt{ssclip} (reconstructs accepted weights after clipping; drift
-$\leq\!\tau$ regardless of Byzantine fraction $f$~\cite{fraboni2022}).
+Byzantine agents execute \emph{sign-flip} attacks: upon completing local
+training, they negate all model parameters before broadcasting, maximally
+disrupting honest robots' aggregation.
+The communication topology is modeled as a random geometric graph on the
+unit square: two robots can exchange models if and only if their Euclidean
+distance is within communication range $r$.
+The algebraic connectivity $\lambda_2$---the second eigenvalue of the graph
+Laplacian---serves as a quantitative proxy for gossip mixing speed; theory
+predicts convergence rate $O(1/\lambda_2)$.
 
-\textbf{\texttt{topology.py}} manages robot positions on a unit square with
-random-geometric connectivity.
-Robots take Gaussian mobility steps ($\sigma{=}0.05$ per round);
-$\lambda_2$ is recomputed via \texttt{numpy.linalg.eigvalsh} on the explicit
-Laplacian.
+\subsection{Learning Setup}
 
-\textbf{\texttt{attacks.py}} provides five attack profiles:
-\texttt{sign\_flip}, \texttt{random\_noise}, \texttt{label\_flip},
-\texttt{gaussian\_perturb}, and an adaptive anti-centroid
-(\texttt{partial\_knowledge}).
-
-The model is \texttt{SmallCNNCifar}: a 3-block Conv--BN--ReLU network
-(${\approx}487$k parameters, ${\approx}2$\,MB per message), chosen so that
-per-round gossip traffic remains tractable at $N{=}50$, $k{=}4$.
-
-\subsection{Infrastructure}
-
-All experiments ran on a SLURM cluster with NVIDIA GPUs under a managed
-\texttt{conda} environment.
-Five SLURM job scripts drove the Byzantine, topology, heterogeneity, FedAvg
-baseline, and encounter ablations.
-Each condition executed 200 gossip rounds with $N{=}50$ robots and logged
-per-round metrics to JSON (${\approx}89$\,KB each, 22~files total).
-Convergence curves, heatmaps, and per-client accuracy distributions were
-generated in \texttt{notebooks/analysis.ipynb}.
+Each robot trains a compact 3-block convolutional network
+(${\approx}487$k parameters, ${\approx}2$\,MB per gossip message) on a
+private CIFAR-10 partition drawn from a Dirichlet($\alpha$) distribution
+over class labels.
+Lower $\alpha$ produces more severe label skew: at $\alpha{=}0.1$ each
+robot holds examples from ${\approx}1$--2 of 10 classes.
+Straggler behavior is modeled by sampling each robot's local epoch count
+uniformly from $\{1,\ldots,5\}$ per round.
+All experiments use $N{=}50$ robots, fanout $k{=}4$, and 200 gossip rounds
+on GPU hardware.
+The centralized FedAvg baseline~\cite{mcmahan2017} uses the same model and
+data partitioning with a parameter server aggregating all clients
+synchronously each round.
 
 \section{Research Questions}
 
@@ -126,39 +125,40 @@ govern gossip convergence under dynamic robot mobility?
 
 \section{Experiments \& Results}
 
-\textbf{Setup:} $N{=}50$ robots, CIFAR-10, Dirichlet $\alpha{=}0.5$,
-200~rounds, fanout $k{=}4$, CUDA.
-The centralized FedAvg baseline achieves \textbf{81.5\%} accuracy (no
-Byzantine robots, no topology constraint).
+Unless otherwise noted, experiments use Dirichlet $\alpha{=}0.5$ and
+20\% Byzantine robots.
+The centralized FedAvg baseline achieves \textbf{81.5\%} accuracy.
 
 \subsection{Q1: Byzantine Robustness}
 
-Table~\ref{tab:byz} shows final honest-robot accuracy for three aggregators.
+Table~\ref{tab:byz} reports final honest-robot accuracy for each
+(aggregator, $f$) condition that was run.
 Mean averaging collapses to near-random accuracy (${\approx}10\%$) at
 $f{\geq}20\%$---a failure mode that directly mirrors Byzantine consensus
 impossibility without sufficient redundancy~\cite{lamport1982}.
 ClippedGossip degrades from 75.2\% to 52.3\% at $f{=}10\%$.
 SSClip sustains \textbf{75.7\%} at $f{=}20\%$: a \textbf{64.7~pp}
-improvement over Mean at the same fault level.
-Notably, SSClip under 20\% Byzantine ($75.7\%$) outperforms ClippedGossip
-under only 10\% Byzantine ($52.3\%$), demonstrating a qualitatively
-stronger fault tolerance guarantee.
+improvement over Mean at the same fault level, within 6~pp of the
+centralized FedAvg ceiling (81.5\%).
 
 \begin{table}[h]
 \centering
-\caption{Final Honest-Robot Accuracy vs.\ Byzantine Fraction
-($N{=}50$, $\alpha{=}0.5$, 200 rounds)}
+\caption{Final Honest-Robot Accuracy for Measured Conditions
+($N{=}50$, $\alpha{=}0.5$, 200 rounds, sign-flip attack)}
 \label{tab:byz}
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}llc@{}}
 \toprule
-Aggregator & $f{=}0\%$ & $f{=}10\%$ & $f{=}20\%$ & $f{=}30\%$ \\
+Aggregator & $f$ & Accuracy \\
 \midrule
-Mean          & 76.3\% & 18.6\% & 11.0\% & 10.0\% \\
-ClippedGossip & 75.2\% & 52.3\% & ---    & ---    \\
-SSClip        & ${\approx}75\%$ & --- & \textbf{75.7\%} & --- \\
+Mean          & 0\%  & 76.3\% \\
+Mean          & 10\% & 18.6\% \\
+Mean          & 20\% & 11.0\% \\
+Mean          & 30\% & 10.0\% \\
 \midrule
-\multicolumn{5}{l}{\footnotesize{---: condition not run; FedAvg (centralized, no attack): 81.5\%}}\\
+ClippedGossip & 0\%  & 75.2\% \\
+ClippedGossip & 10\% & 52.3\% \\
+\midrule
+SSClip        & 20\% & \textbf{75.7\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -246,31 +246,20 @@ push-sum averaging~\cite{kempe2003}.
 \sys demonstrates their application in Byzantine fault-tolerant model
 averaging---a direct analog of Byzantine consensus in asynchronous
 message-passing networks.
-The encounter simulator embodies the CAP tradeoff: partitioned robots
-sacrifice consistency (stale model weights) for availability (continued local
-training).
 The spectral gap $\lambda_2$ serves as the network's algebraic proxy for
 consensus round complexity, connecting graph theory directly to convergence
 guarantees.
 
 \textbf{Obstacles encountered.}
 \begin{enumerate}
-\item \textit{Windows/Ray incompatibility.}
-Ray's \texttt{fork}-based worker pool is unsupported on Windows~11.
-We fell back to \texttt{ThreadPoolExecutor} for local development and ran Ray
-only on the Linux SLURM cluster.
-\item \textit{SLURM job preemption.}
-GPU preemption produced partial result files.
-Per-condition output naming conventions allowed us to identify and safely
-resubmit incomplete conditions.
 \item \textit{Spectral gap on disconnected graphs.}
 NetworkX's \texttt{algebraic\_connectivity} uses an internal
 \texttt{tracemin\_lu} solver that returns NaN on disconnected graphs.
 We replaced it with \texttt{numpy.linalg.eigvalsh} on the explicit Laplacian,
 returning $\lambda_2{=}0$ for disconnected components.
-\item \textit{Experiment wall time.}
+\item \textit{Experiment scale.}
 200~rounds $\times$ 50~robots $\times$ 14~conditions required
-${\approx}18$~GPU-hours across multiple SLURM submissions.
+${\approx}18$~GPU-hours total.
 \end{enumerate}
 
 \textbf{Future work.}
