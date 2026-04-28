@@ -251,11 +251,6 @@ guarantees.
 
 \textbf{Obstacles encountered.}
 \begin{enumerate}
-\item \textit{Spectral gap on disconnected graphs.}
-NetworkX's \texttt{algebraic\_connectivity} uses an internal
-\texttt{tracemin\_lu} solver that returns NaN on disconnected graphs.
-We replaced it with \texttt{numpy.linalg.eigvalsh} on the explicit Laplacian,
-returning $\lambda_2{=}0$ for disconnected components.
 \item \textit{Experiment scale.}
 200~rounds $\times$ 50~robots $\times$ 14~conditions required
 ${\approx}18$~GPU-hours total.
@@ -263,12 +258,9 @@ ${\approx}18$~GPU-hours total.
 
 \textbf{Future work.}
 Three extensions are immediately actionable:
-(1)~\emph{push-sum gossip}~\cite{kempe2003} for provably correct weighted
-averaging under dropped messages and variable delays;
-(2)~\emph{SCAFFOLD control variates}~\cite{karimireddy2020} to correct
-client drift from severe non-IID partitions without synchronization;
-(3)~physical deployment on differential-drive robots with IEEE~802.11p
-ad-hoc communication to validate simulation assumptions.
+(1) Differential Privacy: DP-SGD via Opacus before gossip push — per-round noise budget without server coordination.
+(2) Model Compression: FP32 → FP16 quantization or top-k sparsification to cut the ~1 MB per-message cost.
+(3) Asynchronous Gossip: Ray actors with non-blocking sends and stale-gradient tolerance for real deployment at scale.
 
 \begin{thebibliography}{9}
 \bibitem{mcmahan2017}
