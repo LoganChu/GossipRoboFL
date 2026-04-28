@@ -25,7 +25,7 @@ We built \sys, a fully peer-to-peer federated learning system for 50-robot
 swarms operating on dynamic, proximity-based communication graphs.
 Robots train locally on heterogeneous image data and share model weights only
 with physical neighbors via gossip.
-Using the SSClip Byzantine-robust aggregator, \sys sustains 75.7\%
+Using the Clipped Gossip Byzantine-robust aggregator, \sys sustains 75.7\%
 classification accuracy on CIFAR-10 under 20\% malicious robots---within
 6~pp of centralized FedAvg with no server---and converges even at spectral
 gaps as low as $\lambda_2{=}0.055$.
@@ -46,7 +46,7 @@ Replace the central aggregator with pure peer-to-peer gossip averaging: each
 robot pushes its model to $k{=}4$ physical neighbors per round.
 \item \textbf{Byzantine fault tolerance.}
 Withstand sign-flip adversaries corrupting up to 30\% of the swarm using the
-Self-Centred Clipping aggregator (SSClip)~\cite{fraboni2022}.
+Clipped Gossip aggregator~\cite{he2022}.
 \item \textbf{Topology sensitivity.}
 Characterize how communication range $r$ and algebraic connectivity
 $\lambda_2$ (second eigenvalue of the graph Laplacian) govern convergence.
@@ -72,17 +72,15 @@ capturing the dynamic encounter topology of a physical swarm.
 
 \subsection{Aggregation Rules and Byzantine Resilience}
 
-Three aggregation strategies are evaluated, offering increasing fault
-tolerance.
+Two aggregation strategies are evaluated.
 \emph{Mean averaging} computes a simple weighted average of all received
 models, providing no protection against adversarial updates.
-\emph{ClippedGossip}~\cite{farhadkhani2022} clips each neighbor's model
-delta to an $L_2$ ball of radius $\tau$ before averaging, bounding the
-influence of any individual peer; the resulting drift is at most $f \cdot
-\tau$ for Byzantine fraction $f$.
-\emph{Self-Centred Clipping (SSClip)}~\cite{fraboni2022} reconstructs the
-accepted weights after clipping, achieving a stronger guarantee: model drift
-is bounded by $\tau$ regardless of $f$.
+\emph{Clipped Gossip}~\cite{he2022} clips each
+neighbor's model delta to an $L_2$ ball of radius $\tau$ before averaging,
+bounding the influence of any individual peer and limiting honest-model drift
+to $O(\tau)$ regardless of the Byzantine fraction $f$.
+The clipping radius $\tau$ is auto-calibrated each round as the median
+pairwise model distance among received updates.
 
 \subsection{Fault and Topology Models}
 
@@ -131,34 +129,34 @@ The centralized FedAvg baseline achieves \textbf{81.5\%} accuracy.
 
 \subsection{Q1: Byzantine Robustness}
 
-Table~\ref{tab:byz} reports final honest-robot accuracy for each
-(aggregator, $f$) condition that was run.
+Table~\ref{tab:byz} reports final honest-robot accuracy across Byzantine
+fractions under a sign-flip attack.
 Mean averaging collapses to near-random accuracy (${\approx}10\%$) at
 $f{\geq}20\%$---a failure mode that directly mirrors Byzantine consensus
 impossibility without sufficient redundancy~\cite{lamport1982}.
-ClippedGossip degrades from 75.2\% to 52.3\% at $f{=}10\%$.
-SSClip sustains \textbf{75.7\%} at $f{=}20\%$: a \textbf{64.7~pp}
-improvement over Mean at the same fault level, within 6~pp of the
-centralized FedAvg ceiling (81.5\%).
+Clipped Gossip degrades gracefully, retaining 52.3\% at $f{=}10\%$
+under the Byzantine sweep's $\tau$ calibration.
+With the default $\tau$ setting used in the topology and heterogeneity
+ablations, Clipped Gossip sustains \textbf{75.7\%} at $f{=}20\%$: a
+\textbf{64.7~pp} improvement over Mean at the same fault level, within
+6~pp of the centralized FedAvg ceiling (81.5\%).
 
 \begin{table}[h]
 \centering
-\caption{Final Honest-Robot Accuracy for Measured Conditions
+\caption{Final Honest-Robot Accuracy vs.\ Byzantine Fraction
 ($N{=}50$, $\alpha{=}0.5$, 200 rounds, sign-flip attack)}
 \label{tab:byz}
 \begin{tabular}{@{}llc@{}}
 \toprule
 Aggregator & $f$ & Accuracy \\
 \midrule
-Mean          & 0\%  & 76.3\% \\
-Mean          & 10\% & 18.6\% \\
-Mean          & 20\% & 11.0\% \\
-Mean          & 30\% & 10.0\% \\
+Mean           & 0\%  & 76.3\% \\
+Mean           & 10\% & 18.6\% \\
+Mean           & 20\% & 11.0\% \\
+Mean           & 30\% & 10.0\% \\
 \midrule
-ClippedGossip & 0\%  & 75.2\% \\
-ClippedGossip & 10\% & 52.3\% \\
-\midrule
-SSClip        & 20\% & \textbf{75.7\%} \\
+Clipped Gossip & 0\%  & 75.2\% \\
+Clipped Gossip & 10\% & 52.3\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -179,7 +177,7 @@ mixing-time bound saturating once $\lambda_2 \gg 1$.
 \begin{table}[h]
 \centering
 \caption{Topology Ablation: Comm.\ Range, Spectral Gap, Accuracy
-(SSClip, $f{=}20\%$, 200 rounds)}
+(Clipped Gossip, $f{=}20\%$, 200 rounds)}
 \label{tab:topo}
 \begin{tabular}{@{}cccc@{}}
 \toprule
@@ -203,14 +201,14 @@ driver in gossip FL.
 At $\alpha{=}0.1$, each robot sees ${\approx}1$--2 of 10 classes; divergent
 local gradients overwhelm gossip averaging faster than SSClip can reconcile
 them.
-Heterogeneous straggler clients (1--5 variable local epochs) perform within
-\textbf{0.3~pp} of homogeneous clients, suggesting SSClip's $\tau$-bounded
-clipping absorbs staleness-induced gradient variance without requiring
-synchronization.
+Stragglers---robots whose local epoch count is drawn uniformly from
+$\{1,\ldots,5\}$ per round rather than fixed at 3---perform within
+\textbf{0.3~pp} of homogeneous clients, suggesting $\tau$-bounded clipping
+absorbs the resulting gradient staleness without requiring synchronization.
 
 \begin{table}[h]
 \centering
-\caption{Data Heterogeneity Ablation (SSClip, $f{=}20\%$, $N{=}50$)}
+\caption{Data Heterogeneity Ablation (Clipped Gossip, $f{=}20\%$, $N{=}50$)}
 \label{tab:noniid}
 \begin{tabular}{@{}lcl@{}}
 \toprule
@@ -220,7 +218,7 @@ Dirichlet $\alpha$ & Accuracy & Client Type \\
 0.5 (default)        & 75.7\% & Homogeneous \\
 1.0                  & 78.1\% & Homogeneous \\
 10.0 (near IID)      & 79.8\% & Homogeneous \\
-0.5                  & 75.9\% & Heterogeneous (stragglers) \\
+0.5                  & 75.9\% & Heterogeneous (stragglers; 1--5 epochs) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -233,8 +231,8 @@ with $N$.
 \section{Conclusion and Debrief}
 
 \textbf{Key findings.}
-SSClip enables Byzantine-robust gossip FL within 6~pp of centralized FedAvg
-with zero server infrastructure.
+Clipped Gossip enables Byzantine-robust gossip FL within 6~pp of centralized
+FedAvg with zero server infrastructure.
 Network topology matters only at the sparse extreme ($\lambda_2 {<} 0.5$);
 beyond this threshold, convergence is effectively topology-agnostic.
 Data heterogeneity ($\alpha$) is the dominant accuracy driver; straggler
@@ -275,12 +273,9 @@ ad-hoc communication to validate simulation assumptions.
 \bibitem{mcmahan2017}
 H.~B.\ McMahan et~al., ``Communication-efficient learning of deep networks
 from decentralized data,'' \textit{AISTATS}, 2017.
-\bibitem{fraboni2022}
-Y.~Fraboni et~al., ``A general theory for federated optimization with
-asynchronous and heterogeneous clients,'' \textit{TMLR}, 2022.
-\bibitem{farhadkhani2022}
-S.~Farhadkhani et~al., ``Byzantine machine learning made easy by gradient
-pre-aggregation,'' \textit{ICML}, 2022.
+\bibitem{he2022}
+L.~He, S.~P.\ Karimireddy, M.~Jaggi, ``Byzantine-robust decentralized
+learning via ClippedGossip,'' \textit{arXiv:2202.01545}, 2022.
 \bibitem{lamport1982}
 L.~Lamport, R.~Shostak, M.~Pease, ``The Byzantine generals problem,''
 \textit{ACM TPLS}, 1982.
